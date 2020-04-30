@@ -293,7 +293,19 @@ int ReadPNG(const uint8_t* const data, size_t data_size,
   {
     double image_gamma = 1 / 2.2, screen_gamma = 2.2;
     int srgb_intent;
-    if (png_get_sRGB(png, info, &srgb_intent) ||
+    
+    png_charp name;
+    int comp_type;
+#if LOCAL_PNG_PREREQ(1,5)
+    png_bytep profile;
+#else
+    png_charp profile;
+#endif
+    png_uint_32 len;
+
+     if (!png_get_sRGB(png, info, &srgb_intent) &&
+        !png_get_iCCP(png, info,
+                     &name, &comp_type, &profile, &len) &&
         png_get_gAMA(png, info, &image_gamma)) {
       png_set_gamma(png, screen_gamma, image_gamma);
     }
